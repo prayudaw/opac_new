@@ -7,13 +7,44 @@
     <title>Pencarian</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .slideshow-bg {
+            position: absolute;
+            inset: 0;
+            z-index: -10;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .slideshow-bg img {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .slideshow-bg img.active {
+            opacity: 0.35;
+        }
+    </style>
 </head>
 
 <body class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden">
+    <!-- Slideshow Background -->
+    <div class="slideshow-bg">
+        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=1500&q=80"
+            class="active" alt="bg1">
+        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80"
+            alt="bg2">
+        <!-- <img src="https://images.unsplash.com/photo-1465101178521-c1a4c8a0f8f9?auto=format&fit=crop&w=1500&q=80"
+            alt="bg3"> -->
+    </div>
     <!-- Background Estetik Soft & Natural -->
     <div class="absolute inset-0 -z-10 pointer-events-none">
-        <div class="w-full h-full bg-gradient-to-tr from-gray-300 via-gray-500 to-gray-700">
-            <!-- Lingkaran blur dinamis -->
+        <div class="w-full max-w-xl mx-auto mt-10 px-4 sm:px-6 lg:px-8 z-10">
             <div
                 class="absolute top-0 left-1/2 transform -translate-x-1/2 blur-2xl opacity-10 w-[600px] h-[600px] rounded-full bg-gray-700">
             </div>
@@ -24,7 +55,8 @@
     </div>
     <div class="w-full max-w-xl mx-auto mt-10 px-4 sm:px-6 lg:px-8 z-10">
         <div class="flex flex-col items-center mb-8 z-10">
-            <span class="mb-6 text-5xl font-bold text-white drop-shadow-lg tracking-wide">OPAC</span>
+            <span class="mb-6 text-5xl font-bold text-white drop-shadow-lg tracking-wide"
+                style="color:#f3f7fa;">OPAC</span>
             <form id="form-search" action="javascript:void(0);" method="get" class="w-full">
                 <div class="flex flex-row gap-3 bg-white rounded-2xl shadow px-4 py-4 items-center">
                     <input type="text" name="q" id="search-query" placeholder="Cari sesuatu..."
@@ -42,8 +74,8 @@
                 </div>
             </form>
         </div>
-        <!-- Hasil pencarian akan ditampilkan di sini -->
         <div id="search-result" class="mt-6"></div>
+
 </body>
 <script>
     $(function() {
@@ -54,9 +86,17 @@
                 $('#search-result').html('<div class="text-red-500">Masukkan kata kunci pencarian.</div>');
                 return;
             }
-            // Redirect ke halaman hasil pencarian
             window.location.href = '<?php echo base_url() ?>result?q=' + encodeURIComponent(query);
         });
+
+        // Slideshow background
+        let slides = document.querySelectorAll('.slideshow-bg img');
+        let idx = 0;
+        setInterval(function() {
+            slides[idx].classList.remove('active');
+            idx = (idx + 1) % slides.length;
+            slides[idx].classList.add('active');
+        }, 5000); // Ganti gambar setiap 5 detik
     });
 </script>
 </div>

@@ -34,31 +34,24 @@
                     </button>
                 </div>
             </form>
+            <!-- Tab Menu -->
+            <div class="bg-gray-100">
+                <div
+                    class="flex flex-wrap gap-2 sm:gap-6 border-b border-gray-300 mb-6 text-xs sm:text-sm overflow-x-auto">
+                    <?php
+                    $kategori = isset($_GET['kategori']) ? $_GET['kategori'] : 'Semua';
+                    $kategoriList = ['Semua', 'Buku', 'Jurnal', 'Artikel', 'Skripsi', 'Tesis', 'Disertasi', 'Lainnya'];
+                    foreach ($kategoriList as $kat): ?>
+                        <a href="?q=<?php echo urlencode(isset($query) ? $query : ''); ?>&kategori=<?php echo urlencode($kat); ?>"
+                            class="<?php echo ($kategori == $kat) ? 'text-blue-600 font-semibold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-200'; ?> pb-2 px-2 focus:outline-none transition">
+                            <?php echo $kat; ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
         </div>
-        <!-- Tab Menu -->
-        <!-- Tab Kategori Search -->
-        <?php
-        $kategori = isset($_GET['kategori']) ? $_GET['kategori'] : 'Semua';
-        $kategoriList = ['Semua', 'Buku', 'Jurnal', 'Artikel', 'Skripsi', 'Tesis', 'Disertasi', 'Lainnya'];
-        // Kumpulkan kategori lain yang tidak ada di kategoriList
-        $kategoriLainnya = [];
-        if (isset($results) && is_array($results)) {
-            foreach ($results as $buku) {
-                if (isset($buku['kategori']) && !in_array($buku['kategori'], $kategoriList) && !in_array($buku['kategori'], $kategoriLainnya)) {
-                    $kategoriLainnya[] = $buku['kategori'];
-                }
-            }
-        }
-        // Jika ada kategori lain, tambahkan ke tab 'Lainnya' (tidak perlu ubah tampilan tab, hanya data di bawah)
-        ?>
-        <div class="flex flex-wrap gap-2 sm:gap-6 border-b border-gray-300 mb-6 text-xs sm:text-sm overflow-x-auto">
-            <?php foreach ($kategoriList as $kat): ?>
-                <a href="?q=<?php echo urlencode(isset($query) ? $query : ''); ?>&kategori=<?php echo urlencode($kat); ?>"
-                    class="<?php echo ($kategori == $kat) ? 'text-blue-600 font-semibold border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-200'; ?> pb-2 px-2 focus:outline-none transition">
-                    <?php echo $kat; ?>
-                </a>
-            <?php endforeach; ?>
-        </div>
+
 
         <!-- Hasil Pencarian Card -->
         <?php
@@ -72,8 +65,16 @@
                 return $str;
             }
         }
+
+        $benchmarkEnded = microtime(true);
+        $duration = isset($benchmarkStarted) ? round($benchmarkEnded - $benchmarkStarted, 4) : null;
         ?>
-        <div id="search-result" class="space-y-4 sm:space-y-6">
+        <div id="search-result" class="space-y-4 sm:space-y-8">
+            <div class="mb-4 text-xs text-gray-500">
+                <?php if ($duration): ?>
+                    <span>Pencarian diproses dalam <?php echo $duration; ?> detik.</span>
+                <?php endif; ?>
+            </div>
             <?php if (!isset($query) || trim($query) === ''): ?>
                 <div class="text-red-500">Masukkan kata kunci pencarian.</div>
             <?php elseif (isset($results) && is_array($results) && count($results) > 0): ?>
@@ -100,23 +101,23 @@
                     <div
                         class="bg-gradient-to-br from-blue-50 via-white to-blue-100 rounded-2xl shadow-lg hover:shadow-2xl transition p-3 sm:p-5 flex flex-col md:flex-row gap-3 md:gap-5 items-center border border-blue-100">
                         <div class="flex-shrink-0">
-                            <div class="w-20 h-20 bg-blue-200 rounded-full flex items-center justify-center shadow">
+                            <div
+                                class="w-20 h-20 bg-gradient-to-br from-blue-300 via-blue-100 to-blue-50 rounded-full flex items-center justify-center shadow">
+                                <!-- Icon Book Open (Heroicons) -->
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-600" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 19.5A2.5 2.5 0 006.5 22h11a2.5 2.5 0 002.5-2.5V6a2 2 0 00-2-2H6a2 2 0 00-2 2v13.5z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                        d="M12 6v12m8-12v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6m16 0a2 2 0 00-2-2H6a2 2 0 00-2 2m16 0H4" />
                                 </svg>
                             </div>
                         </div>
                         <div class="flex-1">
                             <div class="text-lg sm:text-xl font-bold text-blue-700 mb-1">
-                                <?php echo highlight_phrase(htmlspecialchars($buku['judul']), isset($query) ? $query : '', '<span class="bg-yellow-200 text-blue-900 rounded px-1">', '</span>'); ?>
+                                <?php echo isset($buku['highlight_phrase']) ? $buku['highlight_phrase'] : htmlspecialchars($buku['judul']); ?>
                             </div>
                             <div class="text-gray-700 text-sm sm:text-base mb-1">
                                 <span class="font-semibold">Pengarang:</span>
-                                <?php echo htmlspecialchars($buku['pengarang']); ?>
+                                <?php echo isset($buku['highlight_pengarang']) ? $buku['highlight_pengarang'] : htmlspecialchars($buku['pengarang']); ?>
                             </div>
                             <div class="text-gray-500 text-xs sm:text-sm">
                                 <span class="font-semibold">Tahun:</span> <?php echo htmlspecialchars($buku['tahun']); ?>
@@ -136,7 +137,16 @@
                 <div class="text-gray-500">Tidak ditemukan hasil untuk "<?php echo htmlspecialchars($query); ?>"</div>
             <?php endif; ?>
         </div>
+        <!-- Button Scroll to Top -->
+        <button id="scrollToTopBtn" title="Kembali ke atas"
+            class="fixed bottom-6 right-6 z-50 bg-blue-600 text-white rounded-full p-3 shadow-lg hover:bg-blue-700 transition hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+            </svg>
+        </button>
         <?php
+
         // Fungsi highlight kata kunci
         if (!function_exists('highlight_phrase')) {
             function highlight_phrase($str, $phrase = '', $tag_open = '<b>', $tag_close = '</b>')
@@ -149,8 +159,27 @@
         }
         ?>
 </body>
-<!-- No jQuery or AJAX needed. Form submits via GET and reloads the page with results. -->
+<script>
+    // Tampilkan tombol jika scroll > 200px
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 200) {
+            scrollBtn.classList.remove('hidden');
+        } else {
+            scrollBtn.classList.add('hidden');
+        }
+    });
+    // Scroll ke atas saat tombol diklik
+    scrollBtn.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+</script>
 </div>
+
+
 </body>
 
 </html>
