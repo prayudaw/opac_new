@@ -23,9 +23,23 @@ class Result extends CI_Controller
 
         $query = trim($this->input->get('q'));
         $results = [];
+        $data['search_error'] = ''; // Inisialisasi variabel error
 
         // Proses input pencarian
         if ($query) {
+            // Log pencarian
+            $log_data = [
+                'keyword' => $query,
+                'ip_address' => $this->input->ip_address(),
+                'user_agent' => $this->input->user_agent(),
+                'searched_at' => date('Y-m-d H:i:s')
+            ];
+
+            // Simpan log ke database (buat model/fungsi sesuai kebutuhan)
+            if (method_exists($this->Book_model, 'log_search')) {
+                $this->Book_model->log_search($log_data);
+            }
+
             // Bersihkan dan ubah ke ASCII
             $query_ascii = iconv('UTF-8', 'ASCII//TRANSLIT', $query);
 
@@ -39,6 +53,9 @@ class Result extends CI_Controller
             // Tentukan jumlah kata
             $word_count = str_word_count($query_clean);
             $data['word_count'] = $word_count;
+
+            // PERBAIKAN: Tetapkan batas maksimal kata
+            $max_word_limit = 20;
 
             // Simpan frasa kutipan jika ada
             preg_match('/^"(.*?)"$/', $query_clean, $quoted);
@@ -54,9 +71,13 @@ class Result extends CI_Controller
             $keywords = $this->Book_model->build_keywords($query_clean, $is_strict);
             $data['keywords'] = $keywords;
 
-            // Jika terlalu pendek (<3 huruf), batal pencarian
+            // PERBAIKAN: Tambahkan validasi untuk jumlah kata maksimal
             if (strlen(preg_replace('/[^a-z]/i', '', $query_clean)) < 3) {
                 $results = [];
+                $data['search_error'] = 'Kata kunci pencarian terlalu pendek (minimal 3 karakter).';
+            } else if ($word_count > $max_word_limit) {
+                $results = [];
+                $data['search_error'] = 'Pencarian dibatasi hingga ' . $max_word_limit . ' kata untuk hasil yang lebih akurat.';
             } else {
                 if ($data['is_strict'] == 'strict') {
 

@@ -8,27 +8,27 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        .slideshow-bg {
-            position: absolute;
-            inset: 0;
-            z-index: -10;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
+    .slideshow-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -10;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
 
-        .slideshow-bg img {
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 1s ease;
-        }
+    .slideshow-bg img {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 1s ease;
+    }
 
-        .slideshow-bg img.active {
-            opacity: 0.35;
-        }
+    .slideshow-bg img.active {
+        opacity: 0.58;
+    }
     </style>
 </head>
 
@@ -58,12 +58,12 @@
             <span class="mb-6 text-5xl font-bold text-white drop-shadow-lg tracking-wide"
                 style="color:#f3f7fa;">OPAC</span>
             <form id="form-search" action="javascript:void(0);" method="get" class="w-full">
-                <div class="flex flex-row gap-3 bg-white rounded-2xl shadow px-4 py-4 items-center">
+                <div class="flex flex-col sm:flex-row gap-3 bg-white rounded-2xl shadow px-4 py-4 items-center">
                     <input type="text" name="q" id="search-query" placeholder="Cari sesuatu..."
-                        class="flex-1 outline-none bg-transparent text-base sm:text-lg px-3 py-3 rounded-xl border border-gray-200 focus:border-blue-400 transition placeholder-gray-500 text-gray-900"
+                        class="w-full outline-none bg-transparent text-base sm:text-lg px-3 py-3 rounded-xl border border-gray-200 focus:border-blue-400 transition placeholder-gray-500 text-gray-900"
                         autofocus>
                     <button type="submit"
-                        class="px-4 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition flex items-center gap-2">
+                        class="w-full sm:w-auto px-4 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -78,26 +78,26 @@
 
 </body>
 <script>
-    $(function() {
-        $('#form-search').on('submit', function(e) {
-            e.preventDefault();
-            var query = $('#search-query').val();
-            if (!query) {
-                $('#search-result').html('<div class="text-red-500">Masukkan kata kunci pencarian.</div>');
-                return;
-            }
-            window.location.href = '<?php echo base_url() ?>result?q=' + encodeURIComponent(query);
-        });
-
-        // Slideshow background
-        let slides = document.querySelectorAll('.slideshow-bg img');
-        let idx = 0;
-        setInterval(function() {
-            slides[idx].classList.remove('active');
-            idx = (idx + 1) % slides.length;
-            slides[idx].classList.add('active');
-        }, 5000); // Ganti gambar setiap 5 detik
+$(function() {
+    $('#form-search').on('submit', function(e) {
+        e.preventDefault();
+        var query = $('#search-query').val();
+        if (!query) {
+            $('#search-result').html('<div class="text-red-500">Masukkan kata kunci pencarian.</div>');
+            return;
+        }
+        window.location.href = '<?php echo base_url() ?>result?q=' + encodeURIComponent(query);
     });
+
+    // Slideshow background
+    let slides = document.querySelectorAll('.slideshow-bg img');
+    let idx = 0;
+    setInterval(function() {
+        slides[idx].classList.remove('active');
+        idx = (idx + 1) % slides.length;
+        slides[idx].classList.add('active');
+    }, 5000); // Ganti gambar setiap 5 detik
+});
 </script>
 </div>
 </body>

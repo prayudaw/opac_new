@@ -141,11 +141,20 @@ class Book_model extends CI_Model
         WHEN buku.penulis3 IS NULL OR buku.penulis3 = '' THEN CONCAT(buku.penulis1, ', ', buku.penulis2)
         ELSE CONCAT(buku.penulis1, ', ', buku.penulis2, ', ', buku.penulis3)
     END) AS Pengarang,  
-        jenis_buku.jns_buku as kategori,
+         ANY_VALUE(buku.editor) as editor,
+        ANY_VALUE(item_buku.label1) as jeni_buku,
+        ANY_VALUE(item_buku.label2) as no_buku,
+        ANY_VALUE(item_buku.label3) as label3,
+        ANY_VALUE(item_buku.label4) as label4,
+        ANY_VALUE(item_buku.label5) as label5,
+        ANY_VALUE(jenis_buku.jns_buku) as kategori,
         ($relevance_expr) AS relevance
     ");
         $this->db->from('buku');
         $this->db->join('jenis_buku', 'buku.kd_jns_buku = jenis_buku.kd_jns_buku', 'left');
+        $this->db->join('item_buku', 'buku.kd_buku = item_buku.kd_buku', 'left');
+        $this->db->group_by('buku.kd_buku');
+
 
         $this->db->group_start();
         foreach ($words as $word) {
@@ -157,7 +166,7 @@ class Book_model extends CI_Model
         }
         $this->db->group_end();
 
-        $this->db->limit(300);
+        $this->db->limit(500);
         $this->db->order_by('relevance', 'DESC');
         // $this->db->order_by('buku.th_terbit', 'DESC');
         $this->db->order_by('buku.judul', 'ASC');
@@ -166,9 +175,18 @@ class Book_model extends CI_Model
 
         // Pada bagian foreach hasil query (search_books dan search_books_loose)
         foreach ($results as &$row) {
+
+
             if (isset($row['kategori']) && strtolower($row['kategori']) == 'sirkulasi') {
                 $row['kategori'] = 'Buku';
             }
+
+            $row['pembimbing'] = '';
+            if (isset($row['kategori']) && strtolower($row['kategori']) == 'skripsi') {
+                $row['pembimbing'] = $row['editor'];
+            }
+
+            $row['ruangan'] = $this->getRuangan($row['kategori']);
             // Highlight hanya kata penting (abaikan noise) pada judul
             $row['highlight_phrase'] = $row['judul'];
             $row['highlight_pengarang'] = $row['Pengarang'];
@@ -189,7 +207,39 @@ class Book_model extends CI_Model
             }
         }
         unset($row);
-
         return $results;
+    }
+
+    public function log_search($log_data)
+    {
+        // Tabel: search_log (id INT AUTO_INCREMENT, keyword VARCHAR, ip_address VARCHAR, user_agent VARCHAR, searched_at DATETIME)
+        $this->db->insert('search_log', [
+            'keyword'     => $log_data['keyword'],
+            'ip_address'  => $log_data['ip_address'],
+            'user_agent'  => $log_data['user_agent'],
+            'searched_at' => $log_data['searched_at']
+        ]);
+    }
+
+    public function getRuangan($kategori)
+    {
+        // Kategori bisa berupa string, misal: 'Buku', 'Jurnal', 'Skripsi', dll
+        $kategori = strtolower($kategori);
+
+        switch ($kategori) {
+            case 'buku':
+            case 'sirkulasi':
+                return 'Ruangan Sirkulasi';
+            case 'jurnal':
+                return 'Referensi Jurnal';
+            case 'artikel':
+                return 'Referensi Artikel';
+            case 'skripsi':
+            case 'tesis':
+            case 'disertasi':
+                return 'Referensi Karya Ilmiah';
+            default:
+                return 'Rak Umum';
+        }
     }
 }
