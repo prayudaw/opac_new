@@ -29,11 +29,23 @@
    ">
                         OPAC
                     </a>
-                    <input type="text" name="q" id="search-query"
-                        value="<?php echo isset($query) ? htmlspecialchars($query) : ''; ?>"
-                        placeholder="Cari sesuatu..."
-                        class="w-full sm:flex-1 outline-none bg-transparent text-base sm:text-lg px-3 py-2 sm:py-3 rounded-xl border border-gray-300 focus:border-blue-400 transition placeholder-gray-400 text-gray-900"
-                        autofocus>
+                    <!-- [UBAH] Bungkus input dan tombol voice dalam satu div -->
+                    <div class="relative w-full sm:flex-1">
+                        <input type="text" name="q" id="search-query"
+                            value="<?php echo isset($query) ? htmlspecialchars($query) : ''; ?>"
+                            placeholder="Cari sesuatu atau gunakan suara..."
+                            class="w-full outline-none bg-transparent text-base sm:text-lg px-3 py-2 sm:py-3 pr-12 rounded-xl border border-gray-300 focus:border-blue-400 transition placeholder-gray-400 text-gray-900"
+                            autofocus>
+                        <!-- [TAMBAHKAN INI] Tombol Voice Search -->
+                        <button type="button" id="voice-search-btn" title="Cari dengan suara"
+                            class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-blue-600 transition focus:outline-none">
+                            <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v3a3 3 0 01-3 3z" />
+                            </svg>
+                        </button>
+                    </div>
                     <button type="submit"
                         class="w-full sm:w-auto px-4 py-2 sm:py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -64,7 +76,7 @@
         </div>
 
 
-        <!-- PERBAIKAN: Tambahkan blok untuk menampilkan pesan error validasi -->
+        <!-- Tambahkan blok untuk menampilkan pesan error validasi -->
         <?php if (!empty($search_error)): ?>
             <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg" role="alert">
                 <p class="font-bold">Peringatan</p>
@@ -135,7 +147,7 @@
                             <div class="text-lg sm:text-xl font-bold text-blue-700 mb-1">
                                 <?php echo isset($buku['highlight_phrase']) ? $buku['highlight_phrase'] : htmlspecialchars($buku['judul']); ?>
                             </div>
-                            <?php if (isset($buku['pembimbing']) && strtolower($buku['kategori']) == 'skripsi' && !empty($buku['pembimbing'])): ?>
+                            <?php if (isset($buku['pembimbing'])): ?>
                                 <div class="text-gray-700 text-sm sm:text-base mb-1">
                                     <span class="font-semibold">Pembimbing:</span>
                                     <?php echo isset($buku['pembimbing']) ? $buku['pembimbing'] : htmlspecialchars($buku['pembimbing']); ?>
@@ -152,6 +164,34 @@
                                 <span class="font-semibold">Kategori:</span>
                                 <?php echo isset($buku['kategori']) ? htmlspecialchars($buku['kategori']) : '-'; ?>
                             </div>
+
+                            <!-- [TAMBAHKAN INI] Menampilkan RAk dan Ruangan -->
+                            <?php if (isset($buku['ruangan']) && !empty($buku['ruangan'])): ?>
+                                <div class="text-gray-500 text-xs sm:text-sm">
+                                    <span class="font-semibold">Ruangan:</span>
+                                    <?php echo htmlspecialchars($buku['ruangan']); ?>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (isset($buku['rak']) && !empty($buku['rak'])): ?>
+                                <div class="text-gray-500 text-xs sm:text-sm">
+                                    <span class="font-semibold">Rak:</span> <?php echo htmlspecialchars($buku['rak']); ?>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (isset($buku['label']) && !empty($buku['label'])): ?>
+                                <div class="text-gray-500 text-xs sm:text-sm">
+                                    <span class="font-semibold">Label:</span> <?php echo htmlspecialchars($buku['label']); ?>
+                                </div>
+                            <?php endif; ?>
+
+
+                            <!-- [TAMBAHKAN BLOK INI] Menampilkan Lokasi Lengkap -->
+                            <?php if (isset($buku['lokasi_lengkap']) && !empty($buku['lokasi_lengkap'])): ?>
+                                <div class="mt-2 text-blue-600 text-xs sm:text-sm font-medium">
+                                    <span class="font-semibold">Lokasi:</span>
+                                    <?php echo htmlspecialchars($buku['lokasi_lengkap']); ?>
+                                </div>
+                            <?php endif; ?>
+
                         </div>
                         <div class="flex flex-col items-end gap-2">
                             <button
@@ -234,10 +274,12 @@
             <span class="font-semibold">Detail Lainnya:</span>
             <ul class="list-disc pl-5 mt-2">
                 <li><span class="font-semibold">Judul:</span> ${buku.judul}</li>
-                <li><span class="font-semibold">Pengarang:</span> ${buku.pengarang}</li>
                 <li><span class="font-semibold">Tahun:</span> ${buku.tahun}</li>
                 <li><span class="font-semibold">Kategori:</span> ${buku.kategori || '-'}</li>
-                <!-- Tambahkan detail lain jika ada -->
+                ${buku.rab ? `<li><span class="font-semibold">RAB:</span> ${buku.rab}</li>` : ''}
+                ${buku.ruangan ? `<li><span class="font-semibold">Ruangan:</span> ${buku.ruangan}</li>` : ''}
+                <!-- [TAMBAHKAN BARIS INI] Menampilkan Lokasi di Modal -->
+                ${buku.lokasi_lengkap ? `<li><span class="font-semibold">Lokasi:</span> ${buku.lokasi_lengkap}</li>` : ''}
             </ul>
         </div>
     `;
@@ -249,9 +291,6 @@
         document.getElementById('detailModal').classList.add('hidden');
     }
 
-    function closeDetailModal() {
-        document.getElementById('detailModal').classList.add('hidden');
-    }
     // Tampilkan tombol jika scroll > 200px
     const scrollBtn = document.getElementById('scrollToTopBtn');
     window.addEventListener('scroll', function() {
@@ -269,6 +308,60 @@
         });
     });
 </script>
+
+<!-- Untuk Voice Search -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const voiceSearchBtn = document.getElementById('voice-search-btn');
+        const micIcon = document.getElementById('mic-icon');
+        const searchQueryInput = document.getElementById('search-query');
+        const searchForm = document.getElementById('form-search');
+
+        // Cek dukungan browser untuk Web Speech API
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            voiceSearchBtn.style.display = 'none'; // Sembunyikan tombol jika tidak didukung
+            console.log("Browser Anda tidak mendukung pencarian suara.");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'id-ID'; // Set bahasa ke Indonesia
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        voiceSearchBtn.addEventListener('click', () => {
+            recognition.start();
+        });
+
+        recognition.addEventListener('speechstart', () => {
+            micIcon.classList.add('text-red-500', 'animate-pulse');
+            searchQueryInput.placeholder = 'Mendengarkan...';
+        });
+
+        recognition.addEventListener('result', (e) => {
+            const transcript = e.results[0][0].transcript;
+            searchQueryInput.value = transcript;
+            // Otomatis submit form setelah suara terdeteksi
+            setTimeout(() => {
+                searchForm.submit();
+            }, 500);
+        });
+
+        recognition.addEventListener('speechend', () => {
+            recognition.stop();
+            micIcon.classList.remove('text-red-500', 'animate-pulse');
+            searchQueryInput.placeholder = 'Cari sesuatu atau gunakan suara...';
+        });
+
+        recognition.addEventListener('error', (e) => {
+            console.error('Error pada speech recognition: ' + e.error);
+            micIcon.classList.remove('text-red-500', 'animate-pulse');
+            searchQueryInput.placeholder = 'Cari sesuatu atau gunakan suara...';
+        });
+    });
+</script>
+
 </div>
 
 

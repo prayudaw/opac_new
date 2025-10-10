@@ -54,7 +54,7 @@ class Result extends CI_Controller
             $word_count = str_word_count($query_clean);
             $data['word_count'] = $word_count;
 
-            // PERBAIKAN: Tetapkan batas maksimal kata
+            // Tetapkan batas maksimal kata
             $max_word_limit = 20;
 
             // Simpan frasa kutipan jika ada

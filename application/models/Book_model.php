@@ -62,6 +62,45 @@ class Book_model extends CI_Model
             if (isset($row['kategori']) && strtolower($row['kategori']) == 'sirkulasi') {
                 $row['kategori'] = 'Buku';
             }
+
+            if (isset($row['kd_jns_buku'])) {
+
+                if ($row['kd_jns_buku'] == 'DT' || $row['kd_jns_buku'] == 'SK' || $row['kd_jns_buku'] == 'TS') {
+                    $row['pembimbing'] = $row['editor'];
+                    $row['ruangan'] = 'Lantai 2 Ruang Skripsi Sebelah timur';
+                    $row['label'] = $row['jenis_buku'] . ' ' . $row['no_buku'] . ' ' . $row['label3'];
+                    $row['rak'] = $this->getRakSkripsi($row['jenis_buku']);
+                }
+
+
+                if ($row['kd_jns_buku'] == 'SR') {
+                    // Pastikan 'no_buku' ada sebelum diproses
+                    if (isset($row['no_buku'])) {
+                        $no_buku_bersih = trim($row['no_buku']);
+
+                        // [LOGIKA BARU UNTUK MENENTUKAN RAK]
+                        $pos = strpos($no_buku_bersih, '.');
+                        if ($pos !== false) {
+                            // Jika ada titik, ambil bagian sebelumnya dan ubah ke huruf besar
+                            $row['rak'] = strtoupper(substr($no_buku_bersih, 0, $pos));
+                        } else {
+                            // Jika tidak ada titik, gunakan seluruh nomor buku
+                            $row['rak'] = strtoupper($no_buku_bersih);
+                        }
+
+                        // Cek jika no_buku diawali dengan '2X' untuk menentukan ruangan
+                        if (substr($no_buku_bersih, 0, 2) === '2X') {
+                            $row['ruangan'] = 'Lantai 3';
+                            // $row['rak'] = 'Rak Sirkulasi'; // Baris ini digantikan oleh logika di atas
+                            $row['label'] = $row['jenis_buku'] . ' ' . $row['no_buku'] . ' ' . $row['label4'] . ' ' . $row['label4'];
+                        } else {
+                            $row['ruangan'] = 'Lantai 4';
+                            // $row['rak'] = 'Rak Referensi'; // Baris ini digantikan oleh logika di atas
+                            $row['label'] = $row['jenis_buku'] . ' ' . $row['no_buku'] . ' ' . $row['label3'] . ' ' . $row['label4'];
+                        }
+                    }
+                }
+            }
             // Highlight hanya kata penting (abaikan noise) pada judul
             $row['highlight_phrase'] = $row['judul'];
             $row['highlight_pengarang'] = $row['Pengarang'];
@@ -135,19 +174,20 @@ class Book_model extends CI_Model
 
         $this->db->select("
         buku.judul, 
+        buku.kd_jns_buku, 
         buku.th_terbit as tahun,
           (CASE 
         WHEN buku.penulis2 IS NULL OR buku.penulis2 = '' THEN buku.penulis1
         WHEN buku.penulis3 IS NULL OR buku.penulis3 = '' THEN CONCAT(buku.penulis1, ', ', buku.penulis2)
         ELSE CONCAT(buku.penulis1, ', ', buku.penulis2, ', ', buku.penulis3)
     END) AS Pengarang,  
-         ANY_VALUE(buku.editor) as editor,
-        ANY_VALUE(item_buku.label1) as jeni_buku,
-        ANY_VALUE(item_buku.label2) as no_buku,
-        ANY_VALUE(item_buku.label3) as label3,
-        ANY_VALUE(item_buku.label4) as label4,
-        ANY_VALUE(item_buku.label5) as label5,
-        ANY_VALUE(jenis_buku.jns_buku) as kategori,
+        GROUP_CONCAT(DISTINCT buku.editor) as editor,
+        GROUP_CONCAT(DISTINCT item_buku.label1) as jenis_buku,
+        GROUP_CONCAT(DISTINCT item_buku.label2) as no_buku,
+        GROUP_CONCAT(DISTINCT item_buku.label3) as label3,
+        GROUP_CONCAT(DISTINCT item_buku.label4) as label4,
+        GROUP_CONCAT(DISTINCT item_buku.label5) as label5,
+        GROUP_CONCAT(DISTINCT jenis_buku.jns_buku) as kategori,
         ($relevance_expr) AS relevance
     ");
         $this->db->from('buku');
@@ -176,17 +216,50 @@ class Book_model extends CI_Model
         // Pada bagian foreach hasil query (search_books dan search_books_loose)
         foreach ($results as &$row) {
 
-
             if (isset($row['kategori']) && strtolower($row['kategori']) == 'sirkulasi') {
                 $row['kategori'] = 'Buku';
             }
 
-            $row['pembimbing'] = '';
-            if (isset($row['kategori']) && strtolower($row['kategori']) == 'skripsi') {
-                $row['pembimbing'] = $row['editor'];
+            if (isset($row['kd_jns_buku'])) {
+
+                if ($row['kd_jns_buku'] == 'DT' || $row['kd_jns_buku'] == 'SK' || $row['kd_jns_buku'] == 'TS') {
+                    $row['pembimbing'] = $row['editor'];
+                    $row['ruangan'] = 'Lantai 2 Ruang Skripsi Sebelah timur';
+                    $row['label'] = $row['jenis_buku'] . ' ' . $row['no_buku'] . ' ' . $row['label3'];
+                    $row['rak'] = $this->getRakSkripsi($row['jenis_buku']);
+                }
+
+
+                if ($row['kd_jns_buku'] == 'SR') {
+                    // Pastikan 'no_buku' ada sebelum diproses
+                    if (isset($row['no_buku'])) {
+                        $no_buku_bersih = trim($row['no_buku']);
+
+                        // [LOGIKA BARU UNTUK MENENTUKAN RAK]
+                        $pos = strpos($no_buku_bersih, '.');
+                        if ($pos !== false) {
+                            // Jika ada titik, ambil bagian sebelumnya dan ubah ke huruf besar
+                            $row['rak'] = strtoupper(substr($no_buku_bersih, 0, $pos));
+                        } else {
+                            // Jika tidak ada titik, gunakan seluruh nomor buku
+                            $row['rak'] = strtoupper($no_buku_bersih);
+                        }
+
+                        // Cek jika no_buku diawali dengan '2X' untuk menentukan ruangan
+                        if (substr($no_buku_bersih, 0, 2) === '2X') {
+                            $row['ruangan'] = 'Lantai 3';
+                            // $row['rak'] = 'Rak Sirkulasi'; // Baris ini digantikan oleh logika di atas
+                            $row['label'] = $row['jenis_buku'] . ' ' . $row['no_buku'] . ' ' . $row['label4'] . ' ' . $row['label4'];
+                        } else {
+                            $row['ruangan'] = 'Lantai 4';
+                            // $row['rak'] = 'Rak Referensi'; // Baris ini digantikan oleh logika di atas
+                            $row['label'] = $row['jenis_buku'] . ' ' . $row['no_buku'] . ' ' . $row['label3'] . ' ' . $row['label4'];
+                        }
+                    }
+                }
             }
 
-            $row['ruangan'] = $this->getRuangan($row['kategori']);
+            // $row['ruangan'] = $this->getRuangan($row['kategori']);
             // Highlight hanya kata penting (abaikan noise) pada judul
             $row['highlight_phrase'] = $row['judul'];
             $row['highlight_pengarang'] = $row['Pengarang'];
@@ -207,6 +280,10 @@ class Book_model extends CI_Model
             }
         }
         unset($row);
+
+        // echo "<pre>";
+        // print_r($results);
+        // die();
         return $results;
     }
 
@@ -221,25 +298,36 @@ class Book_model extends CI_Model
         ]);
     }
 
-    public function getRuangan($kategori)
+    public function getRakSkripsi($jns_buku)
     {
-        // Kategori bisa berupa string, misal: 'Buku', 'Jurnal', 'Skripsi', dll
-        $kategori = strtolower($kategori);
 
-        switch ($kategori) {
-            case 'buku':
-            case 'sirkulasi':
-                return 'Ruangan Sirkulasi';
-            case 'jurnal':
-                return 'Referensi Jurnal';
-            case 'artikel':
-                return 'Referensi Artikel';
-            case 'skripsi':
-            case 'tesis':
-            case 'disertasi':
-                return 'Referensi Karya Ilmiah';
+        // label bisa berupa string, misal: 'Buku', 'Jurnal', 'Skripsi', dll
+        $jns_buku = strtolower($jns_buku);
+
+        switch ($jns_buku) {
+            case 'ay':
+                return 'ADAB';
+            case 'ty':
+                return 'Tarbhiyah';
+            case 'st':
+                return 'Saintek';
+            case 'dy':
+                return 'Dakwah';
+            case 'fb':
+                return 'Febi';
+            case 'sy':
+                return 'Syariah';
+            case 'uy':
+                return 'Usuluddin';
+            case 'dy':
+                return 'Dakwah';
+            case 'dt':
+                return 'Disertasi';
+            case 'ps':
+                return 'Tesis';
+
             default:
-                return 'Rak Umum';
+                return 'not found';
         }
     }
 }
