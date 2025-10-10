@@ -8,27 +8,27 @@
     <link href="<?php echo base_url('assets/css/tailwind.min.css'); ?>" rel="stylesheet">
     <script src="<?php echo base_url('assets/js/jquery-3.6.0.min.js'); ?>"></script>
     <style>
-        .slideshow-bg {
-            position: absolute;
-            inset: 0;
-            z-index: -10;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
+    .slideshow-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -10;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
 
-        .slideshow-bg img {
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 1s ease;
-        }
+    .slideshow-bg img {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 1s ease;
+    }
 
-        .slideshow-bg img.active {
-            opacity: 0.58;
-        }
+    .slideshow-bg img.active {
+        opacity: 0.58;
+    }
     </style>
 </head>
 
@@ -87,69 +87,69 @@
 
 </body>
 <script>
-    $(function() {
-        $('#form-search').on('submit', function(e) {
-            e.preventDefault();
-            var query = $('#search-query').val();
-            if (!query) {
-                $('#search-result').html('<div class="text-red-500">Masukkan kata kunci pencarian.</div>');
-                return;
-            }
-            window.location.href = '<?php echo base_url() ?>result?q=' + encodeURIComponent(query);
+$(function() {
+    $('#form-search').on('submit', function(e) {
+        e.preventDefault();
+        var query = $('#search-query').val();
+        if (!query) {
+            $('#search-result').html('<div class="text-red-500">Masukkan kata kunci pencarian.</div>');
+            return;
+        }
+        window.location.href = '<?php echo base_url() ?>result?q=' + encodeURIComponent(query);
+    });
+
+    // Slideshow background
+    let slides = document.querySelectorAll('.slideshow-bg img');
+    let idx = 0;
+    setInterval(function() {
+        slides[idx].classList.remove('active');
+        idx = (idx + 1) % slides.length;
+        slides[idx].classList.add('active');
+    }, 5000);
+
+    // Voice Search
+    const voiceBtn = document.getElementById('voice-search-btn');
+    const micIcon = document.getElementById('mic-icon');
+    const searchInput = document.getElementById('search-query');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'id-ID';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        voiceBtn.addEventListener('click', function() {
+            recognition.start();
         });
 
-        // Slideshow background
-        let slides = document.querySelectorAll('.slideshow-bg img');
-        let idx = 0;
-        setInterval(function() {
-            slides[idx].classList.remove('active');
-            idx = (idx + 1) % slides.length;
-            slides[idx].classList.add('active');
-        }, 5000);
+        recognition.addEventListener('speechstart', function() {
+            micIcon.classList.add('text-red-500', 'animate-pulse');
+            searchInput.placeholder = 'Mendengarkan...';
+        });
 
-        // Voice Search
-        const voiceBtn = document.getElementById('voice-search-btn');
-        const micIcon = document.getElementById('mic-icon');
-        const searchInput = document.getElementById('search-query');
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition.addEventListener('result', function(e) {
+            const transcript = e.results[0][0].transcript;
+            searchInput.value = transcript;
+            setTimeout(function() {
+                $('#form-search').submit();
+            }, 500);
+        });
 
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'id-ID';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
+        recognition.addEventListener('speechend', function() {
+            recognition.stop();
+            micIcon.classList.remove('text-red-500', 'animate-pulse');
+            searchInput.placeholder = 'Cari sesuatu...';
+        });
 
-            voiceBtn.addEventListener('click', function() {
-                recognition.start();
-            });
-
-            recognition.addEventListener('speechstart', function() {
-                micIcon.classList.add('text-red-500', 'animate-pulse');
-                searchInput.placeholder = 'Mendengarkan...';
-            });
-
-            recognition.addEventListener('result', function(e) {
-                const transcript = e.results[0][0].transcript;
-                searchInput.value = transcript;
-                setTimeout(function() {
-                    $('#form-search').submit();
-                }, 500);
-            });
-
-            recognition.addEventListener('speechend', function() {
-                recognition.stop();
-                micIcon.classList.remove('text-red-500', 'animate-pulse');
-                searchInput.placeholder = 'Cari sesuatu...';
-            });
-
-            recognition.addEventListener('error', function() {
-                micIcon.classList.remove('text-red-500', 'animate-pulse');
-                searchInput.placeholder = 'Cari sesuatu...';
-            });
-        } else {
-            voiceBtn.style.display = 'none';
-        }
-    });
+        recognition.addEventListener('error', function() {
+            micIcon.classList.remove('text-red-500', 'animate-pulse');
+            searchInput.placeholder = 'Cari sesuatu...';
+        });
+    } else {
+        voiceBtn.style.display = 'none';
+    }
+});
 </script>
 </div>
 </body>
