@@ -9,10 +9,17 @@ class Result extends CI_Controller
         parent::__construct();
         $this->load->library('session');
         $this->load->model('Book_model');
+        $this->load->model('Visitor_model');
     }
 
     public function index()
     {
+        // Catat statistik pengunjung
+        $this->Visitor_model->log_visitor(
+            $this->input->ip_address(),
+            $this->input->user_agent()
+        );
+
         //Ambil dan bersihkan query dari URL
         $query = trim($this->input->get('q', TRUE));
         $data['benchmarkStarted'] = microtime(true);;

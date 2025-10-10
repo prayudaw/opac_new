@@ -28,6 +28,12 @@ class Book_model extends CI_Model
         }
         $words = array_values(array_unique($expanded_words)); // Gunakan kata yang sudah diperluas
 
+
+        // Jika tidak ada kata kunci yang valid setelah filter, kembalikan array kosong
+        if (empty($words)) {
+            return [];
+        }
+
         // Bangun ekspresi relevance untuk semua kata
         $relevance_sql = [];
         foreach ($words as $word) {
@@ -228,7 +234,8 @@ class Book_model extends CI_Model
             'pun',
             'lah',
             'kah',
-            'nya'
+            'nya',
+            'bajingan'
         ];
 
         // Abbreviation: singkatan yang sering digunakan
@@ -262,6 +269,7 @@ class Book_model extends CI_Model
         ];
     }
 
+
     public function search_books_loose($query)
     {
         $dictionary = $this->build_dictionary();
@@ -269,6 +277,12 @@ class Book_model extends CI_Model
             $words = array_diff($query, $dictionary['noise']);
         } else {
             $words = array_diff(preg_split('/\s+/', strtolower($query)), $dictionary['noise']);
+        }
+
+        // [FIX] Tambahkan pengecekan ini
+        // Jika tidak ada kata kunci yang valid setelah filter, kembalikan array kosong
+        if (empty($words)) {
+            return [];
         }
 
         // Bangun ekspresi relevance untuk semua kata
@@ -334,34 +348,58 @@ class Book_model extends CI_Model
 
             if (isset($row['kd_jns_buku'])) {
 
-                if ($row['kd_jns_buku'] == 'DT' || $row['kd_jns_buku'] == 'SK' || $row['kd_jns_buku'] == 'TS') {
+                if ($row['kd_jns_buku'] == 'DT' || $row['kd_jns_buku'] == 'SK' || $row['kd_jns_buku'] == 'TS' || $row['kd_jns_buku'] == '13') {
                     $row['pembimbing'] = $row['editor'];
                     $row['ruangan'] = 'Lantai 2 Ruang Skripsi Sebelah timur';
                     $row['label'] = $row['jenis_buku'] . ' ' . $row['no_buku'] . ' ' . $row['label3'];
                     $row['rak'] = $this->getRakSkripsi($row['jenis_buku']);
-                }
-
-
-                if ($row['kd_jns_buku'] == 'SR') {
+                } else if ($row['kd_jns_buku'] == 'SR') {
                     // Pastikan 'no_buku' ada sebelum diproses
                     if (isset($row['no_buku'])) {
                         $no_buku_bersih = trim($row['no_buku']);
 
+
                         // [LOGIKA BARU UNTUK MENENTUKAN RAK]
-                        $pos = strpos($no_buku_bersih, '.');
-                        if ($pos !== false) {
+                        if (strpos($no_buku_bersih, '.') !== false && stripos($no_buku_bersih, 'x') !== false) {
                             // Jika ada titik, ambil bagian sebelumnya dan ubah ke huruf besar
-                            $row['rak'] = strtoupper(substr($no_buku_bersih, 0, $pos));
+                            $row['rak'] = strtoupper(substr($no_buku_bersih, 0,  strpos($no_buku_bersih, '.')));
                         } else {
-                            // Jika tidak ada titik, gunakan seluruh nomor buku
-                            $row['rak'] = strtoupper($no_buku_bersih);
+
+                            if ($no_buku_bersih <= 100) {
+                                $row['rak'] = '100';
+                            }
+                            if ($no_buku_bersih  >= 100 && $no_buku_bersih  <= 300) {
+                                $row['rak'] = '200';
+                            }
+                            if ($no_buku_bersih  >= 300 && $no_buku_bersih  <= 400) {
+                                $row['rak'] = '300';
+                            }
+                            if ($no_buku_bersih  >= 400 && $no_buku_bersih  <= 500) {
+                                $row['rak'] = '400';
+                            }
+                            if ($no_buku_bersih  >= 500 && $no_buku_bersih  <= 600) {
+                                $row['rak'] = '500';
+                            }
+
+                            if ($no_buku_bersih  >= 600 && $no_buku_bersih  <= 700) {
+                                $row['rak'] = '600';
+                            }
+                            if ($no_buku_bersih  >= 700 && $no_buku_bersih  <= 800) {
+                                $row['rak'] = '700';
+                            }
+                            if ($no_buku_bersih  >= 800 && $no_buku_bersih  <= 900) {
+                                $row['rak'] = '800';
+                            }
+                            if ($no_buku_bersih  >= 900 && $no_buku_bersih  <= 1000) {
+                                $row['rak'] = '900';
+                            }
                         }
 
                         // Cek jika no_buku diawali dengan '2X' untuk menentukan ruangan
                         if (substr($no_buku_bersih, 0, 2) === '2X') {
                             $row['ruangan'] = 'Lantai 3';
                             // $row['rak'] = 'Rak Sirkulasi'; // Baris ini digantikan oleh logika di atas
-                            $row['label'] = $row['jenis_buku'] . ' ' . $row['no_buku'] . ' ' . $row['label4'] . ' ' . $row['label4'];
+                            $row['label'] = $row['jenis_buku'] . ' ' . $row['no_buku'] . ' ' . $row['label3'] . ' ' . $row['label4'];
                         } else {
                             $row['ruangan'] = 'Lantai 4';
                             // $row['rak'] = 'Rak Referensi'; // Baris ini digantikan oleh logika di atas
@@ -392,9 +430,7 @@ class Book_model extends CI_Model
             }
         }
         unset($row);
-
-        // echo "<pre>";
-        // print_r($results);
+        // echo "<pre>" . print_r($results, true) . "</pre>";
         // die();
         return $results;
     }
