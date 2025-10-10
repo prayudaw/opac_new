@@ -9,7 +9,7 @@
     <!-- Tambahkan link Google Fonts di <head> -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Pacifico&display=swap"
         rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="<?php echo base_url('assets/css/tailwind.min.css'); ?>" rel="stylesheet">
 </head>
 
 <body class="bg-gray-100 min-h-screen text-gray-900">
@@ -244,6 +244,7 @@
         </div>
 
 </body>
+<script src="<?php echo base_url('assets/js/jquery-3.6.0.min.js'); ?>"></script>
 <script>
     function showDetailModal(buku) {
         let html = `
@@ -278,49 +279,47 @@
                 <li><span class="font-semibold">Kategori:</span> ${buku.kategori || '-'}</li>
                 ${buku.rab ? `<li><span class="font-semibold">RAB:</span> ${buku.rab}</li>` : ''}
                 ${buku.ruangan ? `<li><span class="font-semibold">Ruangan:</span> ${buku.ruangan}</li>` : ''}
-                <!-- [TAMBAHKAN BARIS INI] Menampilkan Lokasi di Modal -->
                 ${buku.lokasi_lengkap ? `<li><span class="font-semibold">Lokasi:</span> ${buku.lokasi_lengkap}</li>` : ''}
             </ul>
         </div>
     `;
-        document.getElementById('modalContent').innerHTML = html;
-        document.getElementById('detailModal').classList.remove('hidden');
+        $('#modalContent').html(html);
+        $('#detailModal').removeClass('hidden');
     }
 
     function closeDetailModal() {
-        document.getElementById('detailModal').classList.add('hidden');
+        $('#detailModal').addClass('hidden');
     }
 
     // Tampilkan tombol jika scroll > 200px
-    const scrollBtn = document.getElementById('scrollToTopBtn');
-    window.addEventListener('scroll', function() {
-        if (window.scrollY > 200) {
-            scrollBtn.classList.remove('hidden');
+    const scrollBtn = $('#scrollToTopBtn');
+    $(window).on('scroll', function() {
+        if ($(window).scrollTop() > 200) {
+            scrollBtn.removeClass('hidden');
         } else {
-            scrollBtn.classList.add('hidden');
+            scrollBtn.addClass('hidden');
         }
     });
     // Scroll ke atas saat tombol diklik
-    scrollBtn.addEventListener('click', function() {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
+    scrollBtn.on('click', function() {
+        $('html, body').animate({
+            scrollTop: 0
+        }, 'smooth');
     });
 </script>
 
 <!-- Untuk Voice Search -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const voiceSearchBtn = document.getElementById('voice-search-btn');
-        const micIcon = document.getElementById('mic-icon');
-        const searchQueryInput = document.getElementById('search-query');
-        const searchForm = document.getElementById('form-search');
+    $(function() {
+        const voiceSearchBtn = $('#voice-search-btn');
+        const micIcon = $('#mic-icon');
+        const searchQueryInput = $('#search-query');
+        const searchForm = $('#form-search');
 
         // Cek dukungan browser untuk Web Speech API
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            voiceSearchBtn.style.display = 'none'; // Sembunyikan tombol jika tidak didukung
+            voiceSearchBtn.hide(); // Sembunyikan tombol jika tidak didukung
             console.log("Browser Anda tidak mendukung pencarian suara.");
             return;
         }
@@ -330,18 +329,18 @@
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
-        voiceSearchBtn.addEventListener('click', () => {
+        voiceSearchBtn.on('click', () => {
             recognition.start();
         });
 
         recognition.addEventListener('speechstart', () => {
-            micIcon.classList.add('text-red-500', 'animate-pulse');
-            searchQueryInput.placeholder = 'Mendengarkan...';
+            micIcon.addClass('text-red-500 animate-pulse');
+            searchQueryInput.attr('placeholder', 'Mendengarkan...');
         });
 
         recognition.addEventListener('result', (e) => {
             const transcript = e.results[0][0].transcript;
-            searchQueryInput.value = transcript;
+            searchQueryInput.val(transcript);
             // Otomatis submit form setelah suara terdeteksi
             setTimeout(() => {
                 searchForm.submit();
@@ -350,14 +349,14 @@
 
         recognition.addEventListener('speechend', () => {
             recognition.stop();
-            micIcon.classList.remove('text-red-500', 'animate-pulse');
-            searchQueryInput.placeholder = 'Cari sesuatu atau gunakan suara...';
+            micIcon.removeClass('text-red-500 animate-pulse');
+            searchQueryInput.attr('placeholder', 'Cari sesuatu atau gunakan suara...');
         });
 
         recognition.addEventListener('error', (e) => {
             console.error('Error pada speech recognition: ' + e.error);
-            micIcon.classList.remove('text-red-500', 'animate-pulse');
-            searchQueryInput.placeholder = 'Cari sesuatu atau gunakan suara...';
+            micIcon.removeClass('text-red-500 animate-pulse');
+            searchQueryInput.attr('placeholder', 'Cari sesuatu atau gunakan suara...');
         });
     });
 </script>

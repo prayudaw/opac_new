@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pencarian</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="<?php echo base_url('assets/css/tailwind.min.css'); ?>" rel="stylesheet">
+    <script src="<?php echo base_url('assets/js/jquery-3.6.0.min.js'); ?>"></script>
     <style>
         .slideshow-bg {
             position: absolute;
@@ -35,14 +35,12 @@
 <body class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden">
     <!-- Slideshow Background -->
     <div class="slideshow-bg">
-        <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=1500&q=80"
-            class="active" alt="bg1">
-        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80"
-            alt="bg2">
+        <img src="<?php echo base_url('assets/img/photo-1.jpeg'); ?>" class="active" alt="bg1">
+        <img src="<?php echo base_url('assets/img/photo-2.jpeg'); ?>" alt="bg2">
         <!-- <img src="https://images.unsplash.com/photo-1465101178521-c1a4c8a0f8f9?auto=format&fit=crop&w=1500&q=80"
             alt="bg3"> -->
     </div>
-    <!-- Background Estetik Soft & Natural -->
+    <!-- Background  -->
     <div class="absolute inset-0 -z-10 pointer-events-none">
         <div class="w-full max-w-xl mx-auto mt-10 px-4 sm:px-6 lg:px-8 z-10">
             <div
