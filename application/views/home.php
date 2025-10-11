@@ -35,8 +35,8 @@
 <body class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden">
     <!-- Slideshow Background -->
     <div class="slideshow-bg">
-        <img src="<?php echo base_url('assets/img/photo-1.jpeg'); ?>" class="active" alt="bg1">
-        <img src="<?php echo base_url('assets/img/photo-2.jpeg'); ?>" alt="bg2">
+        <img src="<?php echo base_url('assets/img/img-1.jpeg'); ?>" class="active" alt="bg1">
+        <img src="<?php echo base_url('assets/img/img-2.jpeg'); ?>" alt="bg2">
         <!-- <img src="https://images.unsplash.com/photo-1465101178521-c1a4c8a0f8f9?auto=format&fit=crop&w=1500&q=80"
             alt="bg3"> -->
     </div>

@@ -349,7 +349,7 @@ class Book_model extends CI_Model
             'SC' => 'Lantai',
             'SH' => 'Lantai',
             'ST' => 'Lantai',
-            'TB' => 'Lantai',
+            'TB' => 'Lantai 2 Ruang Serial Sebelah Barat',
         ];
     }
 
