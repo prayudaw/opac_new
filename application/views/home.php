@@ -5,30 +5,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pencarian</title>
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="<?php echo base_url() ?>assets/img/perpus/logo-perpus.png">
     <link href="<?php echo base_url('assets/css/tailwind.min.css'); ?>" rel="stylesheet">
     <script src="<?php echo base_url('assets/js/jquery-3.6.0.min.js'); ?>"></script>
     <style>
-    .slideshow-bg {
-        position: absolute;
-        inset: 0;
-        z-index: -10;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-    }
+        .slideshow-bg {
+            position: absolute;
+            inset: 0;
+            z-index: -10;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #111;
+            /* Warna latar belakang jika gambar belum termuat */
+        }
 
-    .slideshow-bg img {
-        position: absolute;
-        width: 100vw;
-        height: 100vh;
-        object-fit: cover;
-        opacity: 0;
-        transition: opacity 1s ease;
-    }
+        .slideshow-bg img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            /* Transisi untuk fade-in/out yang lebih halus */
+            transition: opacity 1.5s ease-in-out;
+            /* Animasi akan di-apply saat gambar aktif */
+            will-change: transform, opacity;
+        }
 
-    .slideshow-bg img.active {
-        opacity: 0.58;
-    }
+        .slideshow-bg img.active {
+            opacity: 0.58;
+            /* Terapkan animasi kenburns */
+            animation: kenburns 12s linear infinite;
+        }
+
+        /* Animasi Ken Burns (zoom in dan geser) */
+        @keyframes kenburns {
+            0% {
+                transform: scale(1) translate(0, 0);
+            }
+
+            50% {
+                transform: scale(1.1) translate(-2%, 2%);
+            }
+
+            100% {
+                transform: scale(1) translate(0, 0);
+            }
+        }
     </style>
 </head>
 
@@ -87,69 +111,69 @@
 
 </body>
 <script>
-$(function() {
-    $('#form-search').on('submit', function(e) {
-        e.preventDefault();
-        var query = $('#search-query').val();
-        if (!query) {
-            $('#search-result').html('<div class="text-red-500">Masukkan kata kunci pencarian.</div>');
-            return;
+    $(function() {
+        $('#form-search').on('submit', function(e) {
+            e.preventDefault();
+            var query = $('#search-query').val();
+            if (!query) {
+                $('#search-result').html('<div class="text-red-500">Masukkan kata kunci pencarian.</div>');
+                return;
+            }
+            window.location.href = '<?php echo base_url() ?>result?q=' + encodeURIComponent(query);
+        });
+
+        // Slideshow background
+        let slides = document.querySelectorAll('.slideshow-bg img');
+        let idx = 0;
+        setInterval(function() {
+            slides[idx].classList.remove('active');
+            idx = (idx + 1) % slides.length;
+            slides[idx].classList.add('active');
+        }, 5000);
+
+        // Voice Search
+        const voiceBtn = document.getElementById('voice-search-btn');
+        const micIcon = document.getElementById('mic-icon');
+        const searchInput = document.getElementById('search-query');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'id-ID';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            voiceBtn.addEventListener('click', function() {
+                recognition.start();
+            });
+
+            recognition.addEventListener('speechstart', function() {
+                micIcon.classList.add('text-red-500', 'animate-pulse');
+                searchInput.placeholder = 'Mendengarkan...';
+            });
+
+            recognition.addEventListener('result', function(e) {
+                const transcript = e.results[0][0].transcript;
+                searchInput.value = transcript;
+                setTimeout(function() {
+                    $('#form-search').submit();
+                }, 500);
+            });
+
+            recognition.addEventListener('speechend', function() {
+                recognition.stop();
+                micIcon.classList.remove('text-red-500', 'animate-pulse');
+                searchInput.placeholder = 'Cari sesuatu...';
+            });
+
+            recognition.addEventListener('error', function() {
+                micIcon.classList.remove('text-red-500', 'animate-pulse');
+                searchInput.placeholder = 'Cari sesuatu...';
+            });
+        } else {
+            voiceBtn.style.display = 'none';
         }
-        window.location.href = '<?php echo base_url() ?>result?q=' + encodeURIComponent(query);
     });
-
-    // Slideshow background
-    let slides = document.querySelectorAll('.slideshow-bg img');
-    let idx = 0;
-    setInterval(function() {
-        slides[idx].classList.remove('active');
-        idx = (idx + 1) % slides.length;
-        slides[idx].classList.add('active');
-    }, 5000);
-
-    // Voice Search
-    const voiceBtn = document.getElementById('voice-search-btn');
-    const micIcon = document.getElementById('mic-icon');
-    const searchInput = document.getElementById('search-query');
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'id-ID';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        voiceBtn.addEventListener('click', function() {
-            recognition.start();
-        });
-
-        recognition.addEventListener('speechstart', function() {
-            micIcon.classList.add('text-red-500', 'animate-pulse');
-            searchInput.placeholder = 'Mendengarkan...';
-        });
-
-        recognition.addEventListener('result', function(e) {
-            const transcript = e.results[0][0].transcript;
-            searchInput.value = transcript;
-            setTimeout(function() {
-                $('#form-search').submit();
-            }, 500);
-        });
-
-        recognition.addEventListener('speechend', function() {
-            recognition.stop();
-            micIcon.classList.remove('text-red-500', 'animate-pulse');
-            searchInput.placeholder = 'Cari sesuatu...';
-        });
-
-        recognition.addEventListener('error', function() {
-            micIcon.classList.remove('text-red-500', 'animate-pulse');
-            searchInput.placeholder = 'Cari sesuatu...';
-        });
-    } else {
-        voiceBtn.style.display = 'none';
-    }
-});
 </script>
 </div>
 </body>

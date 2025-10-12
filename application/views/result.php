@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="<?php echo base_url() ?>assets/img/perpus/logo-perpus.png">
     <title>Hasil Pencarian</title>
 
     <!-- Tambahkan link Google Fonts di <head> -->
@@ -29,14 +31,14 @@
    ">
                         OPAC
                     </a>
-                    <!-- [UBAH] Bungkus input dan tombol voice dalam satu div -->
+                    <!-- Bungkus input dan tombol voice dalam satu div -->
                     <div class="relative w-full sm:flex-1">
                         <input type="text" name="q" id="search-query"
                             value="<?php echo isset($query) ? htmlspecialchars($query) : ''; ?>"
                             placeholder="Cari sesuatu atau gunakan suara..."
                             class="w-full outline-none bg-transparent text-base sm:text-lg px-3 py-2 sm:py-3 pr-12 rounded-xl border border-gray-300 focus:border-blue-400 transition placeholder-gray-400 text-gray-900"
                             autofocus>
-                        <!-- [TAMBAHKAN INI] Tombol Voice Search -->
+                        <!-- Tombol Voice Search -->
                         <button type="button" id="voice-search-btn" title="Cari dengan suara"
                             class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-blue-600 transition focus:outline-none">
                             <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
@@ -165,7 +167,7 @@
                                 <?php echo isset($buku['kategori']) ? htmlspecialchars($buku['kategori']) : '-'; ?>
                             </div>
 
-                            <!-- [TAMBAHKAN INI] Menampilkan RAk dan Ruangan -->
+                            <!-- Menampilkan RAk dan Ruangan -->
                             <?php if (isset($buku['ruangan']) && !empty($buku['ruangan'])): ?>
                                 <div class="text-gray-500 text-xs sm:text-sm">
                                     <span class="font-semibold">Ruangan:</span>
@@ -183,14 +185,23 @@
                                 </div>
                             <?php endif; ?>
 
+                            <!--  Menampilkan Status Ketersediaan -->
 
-                            <!-- [TAMBAHKAN BLOK INI] Menampilkan Lokasi Lengkap -->
-                            <?php if (isset($buku['lokasi_lengkap']) && !empty($buku['lokasi_lengkap'])): ?>
-                                <div class="mt-2 text-blue-600 text-xs sm:text-sm font-medium">
-                                    <span class="font-semibold">Lokasi:</span>
-                                    <?php echo htmlspecialchars($buku['lokasi_lengkap']); ?>
-                                </div>
-                            <?php endif; ?>
+                            <?php
+                            $total = 12;
+                            $dipinjam = 6;
+                            $tersedia = 6;
+                            ?>
+                            <!-- <div
+                                class="mt-2 text-xs sm:text-sm font-medium <?php echo ($tersedia > 0) ? 'text-green-600' : 'text-red-600'; ?>">
+                                <span class="font-semibold">Ketersediaan:</span>
+                                <?php echo $tersedia; ?> dari <?php echo $total; ?> eksemplar tersedia
+                            </div> -->
+
+                            <!-- Akhir Blok Ketersediaan -->
+
+
+
 
                         </div>
                         <div class="flex flex-col items-end gap-2">
@@ -290,6 +301,14 @@
     function closeDetailModal() {
         $('#detailModal').addClass('hidden');
     }
+
+    //Tutup modal saat klik di luar konten
+    $('#detailModal').on('click', function(e) {
+        // Cek apakah yang diklik adalah elemen latar belakang itu sendiri
+        if (e.target === this) {
+            closeDetailModal();
+        }
+    });
 
     // Tampilkan tombol jika scroll > 200px
     const scrollBtn = $('#scrollToTopBtn');
